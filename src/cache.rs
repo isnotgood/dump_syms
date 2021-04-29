@@ -6,6 +6,7 @@
 use dirs::home_dir;
 use futures::{stream, StreamExt};
 use reqwest::{self, blocking, header::USER_AGENT, Client};
+use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{BufWriter, Read, Write};
 use std::path::PathBuf;
@@ -170,7 +171,17 @@ fn get_base(file_name: &str) -> PathBuf {
 pub fn get_path_for_sym(file_name: &str, id: &str) -> PathBuf {
     let base = get_base(file_name);
     let file_name = PathBuf::from(file_name);
-    let file_name = file_name.with_extension("sym");
+
+    let mut new_extension = OsString::new();
+    if let Some(ext) = file_name.extension() {
+        if ext.len() > 0 {
+            new_extension.push(ext);
+            new_extension.push(".");
+        }
+    }
+    new_extension.push("sym");
+
+    let file_name = file_name.with_extension(new_extension);
     base.join(id).join(file_name)
 }
 
